@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Land Registry System</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f9fafb; margin: 0; padding: 0; }
+    .container { max-width: 800px; margin: 50px auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    h1 { text-align: center; }
+    input, button, select {
+      display: block;
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 16px;
+    }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    .status-verified { background: #d1fae5; color: #065f46; padding: 3px 8px; border-radius: 6px; font-size: 12px; }
+    .status-pending { background: #fef3c7; color: #92400e; padding: 3px 8px; border-radius: 6px; font-size: 12px; }
+    .tabs { display: flex; margin-bottom: 20px; }
+    .tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; border-bottom: 2px solid transparent; }
+    .tab.active { border-color: #3b82f6; color: #3b82f6; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<div class="container" id="app"></div>
+
+<script>
+  const app = document.getElementById('app');
+
+  let isAuthenticated = false;
+  let currentUser = '';
+  let activeTab = 'register';
+
+  const landRecords = [
+    {
+      id: 'LR-1001',
+      ownerName: 'John Doe',
+      location: 'Nairobi West',
+      area: '0.5 acres',
+      registrationDate: '2023-01-15',
+      verified: true
+    },
+    {
+      id: 'LR-1002',
+      ownerName: 'Jane Smith',
+      location: 'Mombasa North',
+      area: '1.2 acres',
+      registrationDate: '2023-02-20',
+      verified: false
+    }
+  ];
+
+  function renderLogin() {
+    app.innerHTML = `
+      <h1>Land Registry Login</h1>
+      <input id="username" placeholder="Username" />
+      <input id="password" placeholder="Password" type="password" />
+      <button onclick="handleLogin()">Login</button>
+    `;
+  }
+
+  function handleLogin() {
+    const user = document.getElementById('username').value;
+    const pass = document.getElementById('password').value;
+    if (user && pass) {
+      isAuthenticated = true;
+      currentUser = user;
+      renderApp();
+    } else {
+      alert('Please enter username and password');
+    }
+  }
+
+  function handleLogout() {
+    isAuthenticated = false;
+    currentUser = '';
+    renderLogin();
+  }
+
+  function handleRegisterLand() {
+    const id = document.getElementById('landId').value;
+    const owner = document.getElementById('ownerName').value;
+    const location = document.getElementById('location').value;
+    const area = document.getElementById('area').value;
+
+    if (!id || !owner || !location || !area) {
+      alert('Please fill all fields');
+      return;
+    }
+
+    if (landRecords.some(r => r.id === id)) {
+      alert('Land ID already exists');
+      return;
+    }
+
+    landRecords.push({
+      id,
+      ownerName: owner,
+      location,
+      area,
+      registrationDate: new Date().toISOString().split('T')[0],
+      verified: false
+    });
+
+    alert('Land registered successfully (simulated blockchain)');
+    renderApp();
+  }
+
+  function renderApp() {
+    const tabs = `
+      <div class="tabs">
+        <div class="tab ${activeTab === 'register' ? 'active' : ''}" onclick="setTab('register')">Register Land</div>
+        <div class="tab ${activeTab === 'view' ? 'active' : ''}" onclick="setTab('view')">View Records</div>
+      </div>
+    `;
+
+    const logoutButton = `<button onclick="handleLogout()">Logout (${currentUser})</button>`;
+
+    const registerForm = `
+      <h2>Register New Land</h2>
+      <input id="landId" placeholder="Land ID (e.g., LR-XXXX)" />
+      <input id="ownerName" placeholder="Owner Name" />
+      <input id="location" placeholder="Location" />
+      <input id="area" placeholder="Area (e.g., 1.0 acres)" />
+      <button onclick="handleRegisterLand()">Register</button>
+    `;
+
+    const recordsTable = `
+      <h2>Land Records</h2>
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Owner</th><th>Location</th><th>Area</th><th>Date</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          ${landRecords.map(record => `
+            <tr>
+              <td>${record.id}</td>
+              <td>${record.ownerName}</td>
+              <td>${record.location}</td>
+              <td>${record.area}</td>
+              <td>${record.registrationDate}</td>
+              <td>
+                <span class="${record.verified ? 'status-verified' : 'status-pending'}">
+                  ${record.verified ? 'Verified' : 'Pending'}
+                </span>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+
+    app.innerHTML = `
+      <h1>Land Registry System</h1>
+      ${logoutButton}
+      ${tabs}
+      ${activeTab === 'register' ? registerForm : recordsTable}
+    `;
+  }
+
+  function setTab(tab) {
+    activeTab = tab;
+    renderApp();
+  }
+
+  // Initial render
+  renderLogin();
+</script>
+
+</body>
+</html>
